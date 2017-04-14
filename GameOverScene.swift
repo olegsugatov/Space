@@ -14,7 +14,7 @@ class GameOverScene: SKScene {
     init(size:CGSize, won:Bool){
         super.init(size:size)
        
-        self.backgroundColor = SKColor.blackColor()
+        self.backgroundColor = SKColor.black
         
         var message:NSString = NSString()
         
@@ -26,12 +26,12 @@ class GameOverScene: SKScene {
         
         var label:SKLabelNode = SKLabelNode(fontNamed: "DamascusBold")
         label.text = message
-        label.position = CGPointMake(self.size.width/2, self.size.height/2)
+        label.position = CGPoint(x: self.size.width/2, y: self.size.height/2)
         self.addChild(label)
         
-        self.runAction(SKAction.sequence([SKAction.waitForDuration(3.0), SKAction.runBlock({
+        self.run(SKAction.sequence([SKAction.wait(forDuration: 3.0), SKAction.run({
             
-            var transition:SKTransition = SKTransition.flipHorizontalWithDuration(0.5)
+            var transition:SKTransition = SKTransition.flipHorizontal(withDuration: 0.5)
             var scene:SKScene = GameScene(size: self.size)
             self.view.presentScene(scene,transition:transition)
             

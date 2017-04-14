@@ -11,11 +11,11 @@ import SpriteKit
 import AVFoundation
 
 extension SKNode {
-    class func unarchiveFromFile(file : NSString) -> SKNode? {
+    class func unarchiveFromFile(_ file : NSString) -> SKNode? {
         
-        let path = NSBundle.mainBundle().pathForResource(file, ofType: "sks")
+        let path = Bundle.mainBundle().pathForResource(file, ofType: "sks")
         
-        var sceneData = NSData.dataWithContentsOfFile(path, options: .DataReadingMappedIfSafe, error: nil)
+        var sceneData = Data.dataWithContentsOfFile(path, options: .DataReadingMappedIfSafe, error: nil)
         var archiver = NSKeyedUnarchiver(forReadingWithData: sceneData)
         
         archiver.setClass(self.classForKeyedUnarchiver(), forClassName: "SKScene")
@@ -50,7 +50,7 @@ class GameViewController: UIViewController {
 
     override func viewWillLayoutSubviews() {
         
-        var bgMusicURL:NSURL = NSBundle.mainBundle().URLForResource("bgmusic", withExtension: "mp3")
+        var bgMusicURL:URL = Bundle.mainBundle().URLForResource("bgmusic", withExtension: "mp3")
         backgroundMusicPlayer = AVAudioPlayer(contentsOfURL: bgMusicURL, error: nil)
         backgroundMusicPlayer.numberOfLoops = -1
         backgroundMusicPlayer.prepareToPlay()
@@ -61,17 +61,17 @@ class GameViewController: UIViewController {
         skView.showsNodeCount = true
         
         var scene:SKScene = GameScene.sceneWithSize(skView.bounds.size)
-        scene.scaleMode = SKSceneScaleMode.AspectFill
+        scene.scaleMode = SKSceneScaleMode.aspectFill
         skView.presentScene(scene)
     }
         
         
-    override func shouldAutorotate() -> Bool {
+    override var shouldAutorotate : Bool {
         return true
     }
 
     override func supportedInterfaceOrientations() -> Int {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
+        if UIDevice.current.userInterfaceIdiom == .phone {
             return Int(UIInterfaceOrientationMask.AllButUpsideDown.toRaw())
         } else {
             return Int(UIInterfaceOrientationMask.All.toRaw())
@@ -83,7 +83,7 @@ class GameViewController: UIViewController {
         // Release any cached data, images, etc that aren't in use.
     }
 
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
 }

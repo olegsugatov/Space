@@ -11,8 +11,8 @@ import SpriteKit
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var player:SKSpriteNode = SKSpriteNode()
-    var lastYieldTimeInterval:NSTimeInterval = NSTimeInterval()
-    var lastUpdateTimerInterval:NSTimeInterval = NSTimeInterval()
+    var lastYieldTimeInterval:TimeInterval = TimeInterval()
+    var lastUpdateTimerInterval:TimeInterval = TimeInterval()
     var aliensDestroyed:Int = 0
     
     let alienCategory:UInt32 = 0x1 << 1
@@ -30,13 +30,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     init(size:CGSize){
         super.init(size: size)
-        self.backgroundColor = SKColor.blackColor()
+        self.backgroundColor = SKColor.black
         player = SKSpriteNode(imageNamed: "shuttle")
         
-        player.position = CGPointMake(self.frame.size.width/2, player.size.height/2 + 20)
+        player.position = CGPoint(x: self.frame.size.width/2, y: player.size.height/2 + 20)
         self.addChild(player)
         
-        self.physicsWorld.gravity = CGVectorMake(0, 0)
+        self.physicsWorld.gravity = CGVector(dx: 0, dy: 0)
         self.physicsWorld.contactDelegate = self
         
     }
@@ -44,7 +44,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func addAlien() {
        
         var alien:SKSpriteNode = SKSpriteNode(imageNamed: "alien")
-        alien.physicsBody = SKPhysicsBody(rectangleOfSize: alien.size)
+        alien.physicsBody = SKPhysicsBody(rectangleOf: alien.size)
         alien.physicsBody.dynamic = true
         alien.physicsBody.categoryBitMask = alienCategory
         alien.physicsBody.contactTestBitMask = photonTorpedoCategory
@@ -53,9 +53,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let minX = alien.size.width/2
         let maxX = self.frame.size.width - alien.size.width/2
         let rangeX = maxX - minX
-        let position:CGFloat = CGFloat(arc4random()) % CGFloat(rangeX) + CGFloat(minX)
+        let position:CGFloat = CGFloat(arc4random()).truncatingRemainder(dividingBy: CGFloat(rangeX)) + CGFloat(minX)
         
-        alien.position = CGPointMake(position, self.frame.size.height+alien.size.height)
+        alien.position = CGPoint(x: position, y: self.frame.size.height+alien.size.height)
         self.addChild(alien)
         
         let minDuration = 2
@@ -65,18 +65,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         var actionArray:NSMutableArray = NSMutableArray()
         
-        actionArray.addObject(SKAction.moveTo(CGPointMake(position, -alien.size.height), duration:NSTimeInterval(duration)))
-        actionArray.addObject(SKAction.runBlock({
-            var transition:SKTransition = SKTransition.flipHorizontalWithDuration(0.5)
+        actionArray.add(SKAction.move(to: CGPoint(x: position, y: -alien.size.height), duration:TimeInterval(duration)))
+        actionArray.add(SKAction.run({
+            var transition:SKTransition = SKTransition.flipHorizontal(withDuration: 0.5)
             var gameOverScene:SKScene = GameOverScene(size: self.size, won:false)
             self.view.presentScene(gameOverScene, transition:transition)
             }))
         
-        actionArray.addObject(SKAction.removeFromParent())
+        actionArray.add(SKAction.removeFromParent())
         alien.runAction(SKAction.sequence(actionArray))
     }
     
-    func updateWithTimeSinceLastUpdate(timeSinceLastUpdate:CFTimeInterval){
+    func updateWithTimeSinceLastUpdate(_ timeSinceLastUpdate:CFTimeInterval){
         
         lastYieldTimeInterval += timeSinceLastUpdate
         if(lastYieldTimeInterval > 1) {
@@ -85,7 +85,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: TimeInterval) {
         
         var timeSinceLastUpdate = currentTime - lastUpdateTimerInterval
         lastUpdateTimerInterval = currentTime
@@ -98,11 +98,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         updateWithTimeSinceLastUpdate(timeSinceLastUpdate)
     }
     
-    override func touchesEnded(touches: NSSet!, withEvent event: UIEvent!) {
-        self.runAction(SKAction.playSoundFileNamed("torpedo.mp3", waitForCompletion: false))
+    override func touchesEnded(_ touches: NSSet!, withEvent event: UIEvent!) {
+        self.run(SKAction.playSoundFileNamed("torpedo.mp3", waitForCompletion: false))
         
         var touch:UITouch = touches.anyObject() as UITouch
-        var location:CGPoint = touch.locationInNode(self)
+        var location:CGPoint = touch.location(in: self)
         
         var torpedo:SKSpriteNode = SKSpriteNode(imageNamed: "torpedo")
         torpedo.position = player.position
@@ -131,14 +131,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let moveDuration:Float = Float(self.size.width) / Float(velocity)
         
         var actionArray:NSMutableArray = NSMutableArray()
-        actionArray.addObject(SKAction.moveTo(finalDestination, duration: NSTimeInterval(moveDuration)))
-        actionArray.addObject(SKAction.removeFromParent())
+        actionArray.add(SKAction.move(to: finalDestination, duration: TimeInterval(moveDuration)))
+        actionArray.add(SKAction.removeFromParent())
         
         torpedo.runAction(SKAction.sequence(actionArray))
     }
 
     
-    func didBeginContact(contact: SKPhysicsContact!) {
+    func didBegin(_ contact: SKPhysicsContact!) {
         
         var firstBody:SKPhysicsBody
         var secondBody:SKPhysicsBody
@@ -157,7 +157,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     
-    func torpedoDidCollideWithAlien(torpedo:SKSpriteNode, alien:SKSpriteNode){
+    func torpedoDidCollideWithAlien(_ torpedo:SKSpriteNode, alien:SKSpriteNode){
         println("HIT");
         torpedo.removeFromParent()
         alien.removeFromParent()
@@ -166,31 +166,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if (aliensDestroyed > 10){
             // Transition GameOver or Success
-            var transition:SKTransition = SKTransition.flipHorizontalWithDuration(0.5)
+            var transition:SKTransition = SKTransition.flipHorizontal(withDuration: 0.5)
             var gameOverScene:SKScene = GameOverScene(size: self.size, won:true)
             self.view.presentScene(gameOverScene, transition:transition)
         }
     }
     
     
-    func vecAdd(a:CGPoint, b:CGPoint) -> CGPoint {
-        return CGPointMake(a.x + b.x, a.y + b.y)
+    func vecAdd(_ a:CGPoint, b:CGPoint) -> CGPoint {
+        return CGPoint(x: a.x + b.x, y: a.y + b.y)
     }
     
-    func vecSub(a:CGPoint, b:CGPoint) -> CGPoint {
-        return CGPointMake(a.x - b.x, a.y - b.y)
+    func vecSub(_ a:CGPoint, b:CGPoint) -> CGPoint {
+        return CGPoint(x: a.x - b.x, y: a.y - b.y)
     }
     
-    func vecMult(a:CGPoint, b:CGFloat) -> CGPoint {
-        return CGPointMake(a.x * b, a.y * b)
+    func vecMult(_ a:CGPoint, b:CGFloat) -> CGPoint {
+        return CGPoint(x: a.x * b, y: a.y * b)
     }
     
-    func vecLenght(a:CGPoint) -> CGFloat {
+    func vecLenght(_ a:CGPoint) -> CGFloat {
         return CGFloat(sqrtf(CFloat(a.x) * CFloat(a.x)+CFloat(a.y) * CFloat(a.y)))
     }
     
-    func vecNormalize(a:CGPoint) -> CGPoint {
+    func vecNormalize(_ a:CGPoint) -> CGPoint {
         var lenght:CGFloat = vecLenght(a)
-        return CGPointMake(a.x / lenght, a.y / lenght)
+        return CGPoint(x: a.x / lenght, y: a.y / lenght)
     }
 }
